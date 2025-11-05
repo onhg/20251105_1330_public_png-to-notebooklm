@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NotebookLM 圖片自動打包工具 - 部署SOP</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', 'Noto Sans TC', sans-serif;
+            background-color: #f8f9fa; /* 類似 Google Sheets 的背景灰 */
+        }
+        .step-card {
+            background-color: #ffffff;
+            border: 1px solid #e0e0e0; /* 類似儲存格的邊框 */
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+        }
+        .step-number {
+            background-color: #4285F4; /* Google 藍 */
+            color: white;
+            border-radius: 50%;
+            width: 2.5rem;
+            height: 2.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 1.125rem;
+            flex-shrink: 0;
+        }
+        .code-block {
+            background-color: #f1f3f4;
+            border-radius: 4px;
+            padding: 0.5rem 0.75rem;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.875rem;
+            color: #3c4043;
+            word-break: break-all;
+        }
+        .code-textarea {
+            background-color: #f1f3f4;
+            color: #202124;
+            font-family: 'Courier New', monospace;
+            font-size: 0.8rem;
+            border: 1px solid #dadce0;
+            resize: vertical;
+        }
+    </style>
+</head>
+<body class="p-4 md:p-10">
+    <div class="max-w-4xl mx-auto">
+        <div class="text-center mb-8">
+            <h1 class="text-3xl font-bold text-gray-800">NotebookLM 圖片自動打包工具</h1>
+            <h2 class="text-xl font-semibold text-gray-600 mt-2">SOP 3.0 部署面板 (可複製版)</h2>
+        </div>
+
+        <!-- 說明 -->
+        <div class="step-card p-5 mb-6">
+            <h3 class="text-lg font-bold text-gray-800 mb-2">部署說明</h3>
+            <p class="text-gray-700">
+                這是一套「一次性部署」工具。請依照以下步驟，在**自己的 Google 帳號**下完成設定。
+                <br>
+                設定完成後，將獲得一個瀏覽器書籤按鈕，可「一鍵」將 Google 雲端硬碟資料夾中的所有圖片打包成一份 Google 文件。
+            </p>
+            <p class="text-sm text-gray-500 mt-3">
+                <strong>系統原理：</strong> 此工具利用 Google Apps Script 建立一個專屬於你的 Web App (引擎)，並透過瀏覽器書籤 (按鈕) 來呼叫它。
+            </p>
+        </div>
+
+        <!-- 步驟區 -->
+        <div class="space-y-6">
+            
+            <!-- 步驟 1 (修改版) -->
+            <div class="step-card p-5">
+                <div class="flex items-start space-x-4">
+                    <div class="step-number">1</div>
+                    <div>
+                        <h3 class="text-xl font-bold text-gray-800 mb-3">建立引擎 (二選一)</h3>
+                        
+                        <!-- 選項 A: 從範本 (推薦) -->
+                        <div class="border border-gray-200 rounded-lg p-4">
+                            <h4 class="text-lg font-semibold text-gray-700">選項 A：從範本建立 (推薦)</h4>
+                            <p class="mt-2 text-gray-700">
+                                1. 點擊下方連結，取得「SOP 3.0 操作面板」Google Sheet 範本：
+                                <br>
+                                <!-- *** 已更新的連結 *** -->
+                                <a href="https://docs.google.com/spreadsheets/d/15qeS0vj81h9sQ58FklwbbrV6RWC7l1KfoDlYWNBuJNk/edit?usp=sharing" target="_blank" rel="noopener noreferrer" class="code-block mt-1 inline-block text-blue-600 hover:text-blue-800 hover:underline break-all">
+                                    https://docs.google.com/spreadsheets/d/15qeS0vj81h9sQ58FklwbbrV6RWC7l1KfoDlYWNBuJNk/edit?usp=sharing
+                                </a>
+                                <br>
+                                2. 在你的 Google 帳號下「<strong>建立副本</strong>」。
+                                <br>
+                                3. <span class="text-sm text-gray-500">(你建立的 Sheet 副本，就是未來此工具的「引擎室」，請勿刪除。)</span>
+                                <br>
+                                4. <strong>完成此選項後，請直接跳至「步驟 2」。</strong>
+                            </p>
+                        </div>
+
+                        <!-- 分隔線 -->
+                        <div class="relative my-6">
+                            <div class="absolute inset-0 flex items-center" aria-hidden="true">
+                                <div class="w-full border-t border-gray-300"></div>
+                            </div>
+                            <div class="relative flex justify-center">
+                                <span class="px-2 bg-white text-sm font-medium text-gray-500">或</span>
+                            </div>
+                        </div>
+
+                        <!-- 選項 B: 從零手動建立 -->
+                        <div class="border border-gray-200 rounded-lg p-4">
+                            <h4 class="text-lg font-semibold text-gray-700">選項 B：從零手動建立 (進階)</h4>
+                            <p class="mt-2 text-gray-700 mb-2">
+                                如果你不想使用範本，或範本連結失效，你可以手動建立：
+                            </p>
+                            <ol class="list-decimal list-inside mt-2 text-gray-700 space-y-2">
+                                <li>在瀏覽器開啟 <code class="code-block">sheets.new</code> 建立一份新的 Google 試算表。</li>
+                                <li>將它命名為「圖片打包工具 - 引擎室」(或任何你記得的名稱)。</li>
+                                <li>點擊 <code class="code-block">擴充功能</code> &gt; <code class="code-block">Apps Script</code>。</li>
+                                <li>(選填) 將 Apps Script 專案改名為「圖片打包 Web App」。</li>
+                                <li>刪除 <code class="code-block">Code.gs</code> 檔案中的所有預設程式碼。</li>
+                                <li><strong>完整複製</strong>並<strong>貼上</strong>以下的 Web App 程式碼：
+                                    <textarea readonly class="code-textarea w-full mt-2 p-3 rounded-md" rows="15">
+/**
+ * (Web App 版本)
+ * 接收來自 GET 請求的 Google Drive 資料夾 URL，
+ * 將該資料夾中的圖片打包成一份 Google 文件。
+ */
+function doGet(e) {
+  var folderUrl = e.parameter.folderUrl; // 從書籤傳來的參數
+  
+  // 1. 檢查 URL 是否存在
+  if (!folderUrl) {
+    return ContentService.createTextOutput("錯誤：未提供 folderUrl 參數。");
+  }
+
+  try {
+    // 2. 提取 Folder ID
+    var folderId = extractFolderIdFromUrl(folderUrl);
+    
+    if (!folderId) {
+      throw new Error("無法從網址中辨識出 Folder ID。請確認網址是否正確。");
+    }
+
+    // 3. 獲取來源資料夾
+    var sourceFolder = DriveApp.getFolderById(folderId);
+    var folderName = sourceFolder.getName();
+
+    // 4. 建立新的 Google 文件
+    var docName = folderName + " - 圖片彙整 (" + new Date().toLocaleString('sv') + ")";
+    var doc = DocumentApp.create(docName);
+    var body = doc.getBody();
+    
+    // 將新文件移動到來源資料夾中
+    DriveApp.getFileById(doc.getId()).moveTo(sourceFolder);
+
+    body.appendParagraph(docName).setHeading(DocumentApp.ParagraphHeading.HEADING1);
+    body.appendParagraph("此文件由「一鍵打包書籤」自動生成。\n來源資料K夾：" + folderName);
+    body.appendHorizontalRule();
+
+    // 5. 遍歷檔案並插入圖片
+    var files = sourceFolder.getFiles();
+    var imageCount = 0;
+
+    while (files.hasNext()) {
+      var file = files.next();
+      var mimeType = file.getMimeType();
+
+      if (mimeType.startsWith('image/')) {
+        var imageBlob = file.getBlob();
+        body.appendParagraph(file.getName()).setHeading(DocumentApp.ParagraphHeading.HEADING3);
+        body.appendImage(imageBlob);
+        body.appendParagraph("\n"); 
+        imageCount++;
+      }
+    }
+
+    // 6. 寫入總結並儲存
+    body.appendHorizontalRule();
+    body.appendParagraph("處理完成。共插入 " + imageCount + " 張圖片。");
+    doc.saveAndClose();
+    
+    // 7. 回報成功訊息 (這會顯示在新開的網頁分頁上)
+    var successMessage = "✅ 成功！\n\n已建立文件 '" + docName + "'\n內含 " + imageCount + " 張圖片。\n\n文件已存回原資料夾，你現在可以關閉此分頁了。";
+    return ContentService.createTextOutput(successMessage);
+
+  } catch (err) {
+    // 錯誤處理
+    Logger.log(err.toString());
+    return ContentService.createTextOutput("❌ 發生錯誤：\n\n" + err.message + "\n\n請檢查 Google Drive 網址是否正確，以及腳本權限。");
+  }
+}
+
+/**
+ * 輔助工具：從 Google Drive URL 中提取 Folder ID
+ * @param {string} url - Google Drive 的網址
+ * @return {string} - Folder ID
+ */
+function extractFolderIdFromUrl(url) {
+  var id = null;
+  // 處理 .../folders/FOLDER_ID 格式 (包含 /u/0/, /u/1/ 等)
+  var match = url.match(/\/folders\/([a-zA-Z0-9_-]+)/);
+  if (match && match[1]) {
+    id = match[1];
+  } else {
+    // 處理 ...id=FOLDER_ID 格式 (例如分享連結)
+    match = url.match(/id=([a-zA-Z0-9_-]+)/);
+    if (match && match[1]) {
+      id = match[1];
+    }
+  }
+  return id;
+}
+
+/**
+ * 輔助工具：建立選單 (可選，保留它可以讓你從 Sheet 介面測試)
+ */
+function onOpen() {
+  var ui = SpreadsheetApp.getUi();
+  ui.createMenu('打包工具 (手動)')
+      .addItem('1. 測試 (讀取 A1)', 'testFromSheet')
+      .addToUi();
+}
+
+/**
+ * 輔助工具：從 Sheet 測試 doGet 邏輯
+ */
+function testFromSheet() {
+  var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+  var urlCell = sheet.getRange('A1');
+  var statusCell = sheet.getRange('A2');
+  var folderUrl = urlCell.getValue();
+  
+  // 模擬 doGet 的參數
+  var mockEvent = {
+    parameter: {
+      folderUrl: folderUrl
+    }
+  };
+  
+  // 呼叫 doGet 並獲取回傳的文字
+  var response = doGet(mockEvent).getContent();
+  statusCell.setValue(response);
+  SpreadsheetApp.getUi().alert(response);
+}
+                                    </textarea>
+                                </li>
+                                <li>點擊「<strong>儲存</strong>」圖示。</li>
+                                <li><strong>完成此選項後，請繼續「步驟 2」。</strong></li>
+                            </ol>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 步驟 2 (原 4-8) -->
+            <div class="step-card p-5">
+                <div class="flex items-start space-x-4">
+                    <div class="step-number">2</div>
+                    <div>
+                        <h3 class="text-xl font-bold text-gray-800">部署 Web App (引擎)</h3>
+                        <ol class="list-decimal list-inside mt-2 text-gray-700 space-y-1.5">
+                            <li>在你的 Apps Script 編輯器中，點擊右上角的藍色按鈕「<strong>部署</strong>」&gt;「<strong>新增部署作業</strong>」。</li>
+                            <li>在「選取類型」旁點擊齒輪圖示，選擇「<strong>網路應用程式</strong>」。</li>
+                            <li>確認以下設定：
+                                <ul class="list-disc list-inside ml-6 my-2 p-3 bg-blue-50 rounded-md border border-blue-200">
+                                    <li><strong>執行者：</strong> 選擇「<strong>我 (你的 Email)</strong>」</li>
+                                    <li><strong>誰可以存取：</strong> 選擇「<strong>僅限我自己</strong>」</li>
+                                </ul>
+                            </li>
+                            <li>點擊「<strong>部署</strong>」。</li>
+                            <li>
+                                畫面會彈出「需要授權」，請點擊「<strong>審查權限</strong>」。
+                                <br>
+                                <span class="text-sm text-gray-500">(依序選擇你的帳號 &gt; 進階 &gt; 前往...(不安全) &gt; 允許)</span>
+                            </li>
+                        </ol>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 步驟 3 (原 9) (互動) -->
+            <div class="step-card p-5 border-2 border-blue-500 shadow-lg">
+                <div class="flex items-start space-x-4">
+                    <div class="step-number">3</div>
+                    <div>
+                        <h3 class="text-xl font-bold text-blue-700">貼上 Web App 網址</h3>
+                        <p class="mt-2 text-gray-700 mb-3">
+                            部署成功後，會顯示一個「網路應用程式網址」。請<strong>完整複製</strong>該網址，並貼到下方的輸入框中。
+                        </p>
+                        <label for="webAppUrlInput" class="block text-sm font-medium text-gray-700 mb-1">貼上你的「網路應用程式網址」：</label>
+                        <input type="text" id="webAppUrlInput" class="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500" placeholder="https://script.google.com/macros/s/...">
+                    </div>
+                </div>
+            </div>
+
+            <!-- 步驟 4 (原 10) (互動) -->
+            <div class="step-card p-5 border-2 border-green-500 shadow-lg">
+                <div class="flex items-start space-x-4">
+                    <div class="step-number bg-green-600">4</div>
+                    <div>
+                        <h3 class="text-xl font-bold text-green-700">產生並複製書籤代碼</h3>
+                        <p class="mt-2 text-gray-700 mb-3">
+                            下方的文字框已自動產生專屬於你的「書籤代碼」。請點擊按鈕**一鍵複製**。
+                        </p>
+                        <label for="bookmarkletOutput" class="block text-sm font-medium text-gray-700 mb-1">自動產生的書籤代碼：</label>
+                        <textarea id="bookmarkletOutput" rows="5" class="w-full p-2 border border-gray-300 rounded-md bg-gray-50 font-mono text-sm" readonly></textarea>
+                        <button id="copyButton" class="mt-3 px-4 py-2 bg-green-600 text-white font-semibold rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2">
+                            複製代碼
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 步驟 5 (原 11) -->
+            <div class="step-card p-5">
+                <div class="flex items-start space-x-4">
+                    <div class="step-number">5</div>
+                    <div>
+                        <h3 class="text-xl font-bold text-gray-800">建立書籤 (按鈕)</h3>
+                        <ol class="list-decimal list-inside mt-2 text-gray-700 space-y-1.5">
+                            <li>在你的瀏覽器「書籤列」上按右鍵。</li>
+                            <li>選擇「<strong>新增書籤...</strong>」(或「加入頁面...」)。</li>
+                            <li>在「<strong>名稱</strong>」欄位，輸入一個你喜歡的名字 (例如：<code class="code-block">📦 打包圖片</code>)。</li>
+                            <li>在「<strong>網址</strong>」欄位，**貼上**你剛剛從「步驟 4」複製的完整代碼 (它會以 `javascript:...` 開頭)。</li>
+                            <li>點擊「<strong>儲存</strong>」。</li>
+                        </ol>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 步驟 6 (原 12) -->
+            <div class="step-card p-5 bg-blue-50 border-blue-200">
+                <div class="flex items-start space-x-4">
+                    <div class="step-number">✅</div>
+                    <div>
+                        <h3 class="text-xl font-bold text-gray-800">部署完成！</h3>
+                        <p class="mt-2 text-gray-700">
+                            未來，當你要打包圖片時，只需：
+                            <br>
+                            1. 在 Google 雲端硬碟**進入**那個圖片資料夾。
+                            <br>
+                            2. **點擊**書籤列上的「📦 打包圖片」按鈕。
+                            <br>
+                            3. 一份打包好的 Google 文件就會自動出現在該資料夾中。
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        const input = document.getElementById('webAppUrlInput');
+        const output = document.getElementById('bookmarkletOutput');
+        const copyButton = document.getElementById('copyButton');
+
+        function generateBookmarklet() {
+            const webAppUrl = input.value.trim();
+            if (!webAppUrl) {
+                output.value = '請在「步驟 3」貼上你的 Web App 網址...';
+                return;
+            }
+            
+            // 這裡使用模板字符串和 \n 來換行，但在 javascript: 協議中換行會被忽略，所以是安全的。
+            // 關鍵是 alert 中的 \n 必須是雙反斜線 \\n 才能在最終的字符串中正確轉義。
+            const bookmarkletCode = `javascript:(function(){var webAppUrl='${webAppUrl}';var currentUrl=window.location.href;if(!(currentUrl.includes('drive.google.com') && currentUrl.includes('/folders/'))){alert('錯誤：\\n\\n請先進入一個 Google 雲端硬碟的「資料夾」頁面，然後再點擊此書籤。');return;}var fullRequestUrl=webAppUrl+'?folderUrl='+encodeURIComponent(currentUrl);window.open(fullRequestUrl,'_blank');})();`;
+            
+            output.value = bookmarkletCode;
+        }
+
+        function copyToClipboard() {
+            output.select();
+            
+            // 使用 document.execCommand 作為備用方案
+            try {
+                document.execCommand('copy');
+                copyButton.innerText = '複製成功！';
+                setTimeout(() => { copyButton.innerText = '複製代碼'; }, 2000);
+            } catch (err) {
+                copyButton.innerText = '複製失敗';
+                alert('複製失敗，請手動複製。');
+            }
+        }
+
+        input.addEventListener('input', generateBookmarklet);
+        copyButton.addEventListener('click', copyToClipboard);
+
+        // 初始化
+        generateBookmarklet();
+    </script>
+</body>
+</html>
+
