@@ -25,7 +25,7 @@
 
 ### 線上部署教學
 
-👉 **[立即前往部署面板](https://你的使用者名稱.github.io/20251105_1330_public_png-to-notebooklm/)**
+👉 **[立即前往部署面板](https://onhg.github.io/20251105_1330_public_png-to-notebooklm/)**
 
 部署面板提供完整的互動式教學，只需跟著步驟操作：
 
